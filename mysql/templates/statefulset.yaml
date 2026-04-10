@@ -5,7 +5,7 @@ metadata:
   namespace: expense
 spec:
   serviceName: "mysql-headless"
-  replicas: {{ .Values.statefulset.replicas }}
+  replicas: 1
 
   selector:
     matchLabels:
@@ -21,12 +21,9 @@ spec:
         tier: db
 
     spec:
-      nodeSelector:
-        topology.kubernetes.io/zone: us-east-1a   # ✅ correct
-
       containers:
         - name: mysql
-          image: giri1492/mysql:{{ .Values.statefulset.version }}
+          image: giri1492/mysql:1.0.0
           volumeMounts:
             - name: mysql
               mountPath: /var/lib/mysql
@@ -39,4 +36,4 @@ spec:
         storageClassName: expense-ebs
         resources:
           requests:
-            storage: {{ .Values.statefulset.storage }}
+            storage: 1Gi
