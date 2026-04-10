@@ -4,36 +4,40 @@ metadata:
   name: mysql
   namespace: expense
 spec:
+  serviceName: "mysql-headless"
+  replicas: {{ .Values.statefulset.replicas }}
   selector:
     matchLabels:
       app: mysql
       project: expense
-      tier: db # has to match .spec.template.metadata.labels
-  serviceName: "mysql-headless"
-  replicas: {{ .Values.statefulset.replicas }} # by default is 1
-  minReadySeconds: 10 # by default is 0
+      tier: db
+
   template:
     metadata:
       labels:
         app: mysql
         project: expense
-        tier: db # has to match .spec.selector.matchLabels
+        tier: db
+
     spec:
       terminationGracePeriodSeconds: 10
+
+      nodeSelector:
+        topology.kubernetes.io/zone: us-east-1a   # ✅ FIXED
+
       containers:
-      - name: mysql
-        image: giri1492/mysql:{{ .Values.statefulset.version }}
-        volumeMounts:
         - name: mysql
-          mountPath: /var/lib/mysql
-  # Instead of creating a PVC resource, you can directly provide in statefulset
+          image: giri1492/mysql:{{ .Values.statefulset.version }}
+          volumeMounts:
+            - name: mysql
+              mountPath: /var/lib/mysql
+
   volumeClaimTemplates:
-  - metadata:
-      name: mysql
-      namespace: expense
-    spec:
-      accessModes: [ "ReadWriteOnce" ]
-      storageClassName: "expense-ebs"
-      resources:
-        requests:
-          storage: {{ .Values.statefulset.storage }}
+    - metadata:
+        name: mysql
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: expense-ebs
+        resources:
+          requests:
+            storage: {{ .Values.statefulset.storage }}
